@@ -12,13 +12,10 @@ export default {
       fontFamily: {
         sans: ["var(--font-geist-sans)", "Arial", "sans-serif"],
         mono: ["var(--font-geist-mono)", "monospace"],
-        poppins: ["PoppinsRegular", "sans-serif"],
-        "poppins-black": ["PoppinsBlack", "sans-serif"],
-        "poppins-bold": ["PoppinsBold", "sans-serif"],
-        "poppins-italic": ["PoppinsItalic", "sans-serif"],
-        "poppins-semibold": ["PoppinsSemiBold", "sans-serif"],
+        "poppins-italic": ["Poppins-Italic", "sans-serif"],
       },
     },
   },
+  safelist: ["font-poppins-italic"],
   plugins: [],
 };
