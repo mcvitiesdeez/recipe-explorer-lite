@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Head silhouette -->
+  <path d="M100,10 C50,10 10,50 10,100 C10,150 50,190 100,190 L160,190 C160,190 190,160 190,100 C190,40 160,10 100,10 Z" fill="#26BB84" />
+  
+  <!-- Shadow/depth effect -->
+  <path d="M160,190 C160,190 190,160 190,100 C190,40 160,10 100,10 L100,190 L160,190 Z" fill="#1CA875" />
+  
+  <!-- Inner white circle -->
+  <circle cx="100" cy="100" r="70" fill="white" />
+  
+  <!-- Utensils - Spoon -->
+  <path d="M75,70 C68,70 65,80 65,85 C65,95 70,110 70,120 C70,125 65,130 65,130 L85,130 C85,130 80,125 80,120 C80,110 85,95 85,85 C85,80 82,70 75,70 Z" fill="#F05D5E" />
+  
+  <!-- Utensils - Fork -->
+  <path d="M115,70 L115,95 M125,70 L125,95 M135,70 L135,95" stroke="#F05D5E" stroke-width="8" stroke-linecap="round" />
+  <path d="M125,95 C125,95 125,110 125,120 C125,125 120,130 120,130 L140,130 C140,130 135,125 135,120 C135,110 125,95 125,95 Z" fill="#F05D5E" />
+</svg> 
