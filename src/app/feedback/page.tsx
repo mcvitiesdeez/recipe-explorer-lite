@@ -102,10 +102,10 @@ export default function FeedbackPage() {
           return (
             <div
               key={feedback.id}
-              className="bg-white rounded-xl shadow-lg p-6 flex flex-col md:flex-row gap-6"
+              className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex flex-col md:flex-row gap-6"
             >
               {/* Meal Image and Title */}
-              <div className="md:w-1/4">
+              <div className="w-full md:w-1/4">
                 <Link href={`/recipe/${feedback.mealId}`}>
                   <div className="relative w-full aspect-square rounded-lg overflow-hidden">
                     {meal && (
@@ -124,7 +124,7 @@ export default function FeedbackPage() {
               </div>
 
               {/* Feedback Content */}
-              <div className="md:w-3/4">
+              <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-4 mb-3">
                   <span className="font-semibold">{feedback.name}</span>
                   <span className="text-gray-500">{feedback.email}</span>
@@ -152,46 +152,44 @@ export default function FeedbackPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-8 flex justify-center items-center gap-2">
-          {/* Previous Page Button */}
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100"
-            aria-label="Previous page"
-          >
-            <ChevronLeft size={20} />
-          </button>
+      <div className="mt-8 flex flex-wrap justify-center items-center gap-2">
+        {/* Previous Page Button */}
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100"
+          aria-label="Previous page"
+        >
+          <ChevronLeft size={20} />
+        </button>
 
-          {/* Page Numbers */}
-          <div className="flex gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`w-10 h-10 rounded-lg ${
-                  currentPage === page
-                    ? "bg-orange-500 text-white"
-                    : "border hover:bg-gray-100"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
-
-          {/* Next Page Button */}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100"
-            aria-label="Next page"
-          >
-            <ChevronRight size={20} />
-          </button>
+        {/* Page Numbers */}
+        <div className="flex gap-2">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => handlePageChange(page)}
+              className={`w-10 h-10 rounded-lg ${
+                currentPage === page
+                  ? "bg-orange-500 text-white"
+                  : "border hover:bg-gray-100"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
         </div>
-      )}
+
+        {/* Next Page Button */}
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100"
+          aria-label="Next page"
+        >
+          <ChevronRight size={20} />
+        </button>
+      </div>
     </div>
   );
 }

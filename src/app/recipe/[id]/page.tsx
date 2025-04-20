@@ -91,8 +91,8 @@ export default function RecipeDetailPage() {
           {recipe.strMeal}
         </h1>
 
-        {/* Image and Tags Container */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:items-start">
+        {/* Image and Info Container */}
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Image Container */}
           <div className="relative w-full lg:w-1/2 aspect-video sm:aspect-square rounded-xl overflow-hidden">
             <Image
@@ -105,8 +105,8 @@ export default function RecipeDetailPage() {
             />
           </div>
 
-          {/* Tags and Progress Info */}
-          <div className="flex-1">
+          {/* Info Container */}
+          <div className="w-full lg:w-1/2 space-y-6">
             <div className="flex flex-wrap gap-2 mb-4">
               <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm sm:text-base">
                 {recipe.strCategory}

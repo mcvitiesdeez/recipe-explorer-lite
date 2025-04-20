@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
+import MobileMenu from "./MobileMenu";
 
 export default function Navbar() {
   return (
@@ -10,12 +11,22 @@ export default function Navbar() {
       <div className="flex items-center justify-between">
         <Link
           href="/"
-          className="flex flex-row pl-8 items-center hover:text-[#e63946] hover:scale-115 duration-300"
+          className="flex flex-row items-center hover:text-[#e63946] hover:scale-115 duration-300"
         >
-          <Image src="/images/logo.png" alt="logo" width={100} height={100} />
-          <h1 className="text-4xl font-bold">Recipe Explorer</h1>
+          <Image
+            src="/images/logo.png"
+            alt="logo"
+            width={100}
+            height={100}
+            className="w-16 md:w-24 lg:w-[100px]"
+          />
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold ml-2">
+            Recipe Explorer
+          </h1>
         </Link>
-        <div className="flex gap-8 pr-12 items-center">
+
+        {/* Desktop Menu */}
+        <div className="hidden lg:flex gap-8 pr-12 items-center">
           <Link
             href="/about"
             className="font-bold text-2xl hover:text-[#e63946] hover:scale-110 duration-300"
@@ -35,6 +46,9 @@ export default function Navbar() {
             Feedback
           </Link>
         </div>
+
+        {/* Mobile Menu */}
+        <MobileMenu />
       </div>
     </nav>
   );
