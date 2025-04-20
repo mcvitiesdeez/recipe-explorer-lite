@@ -72,8 +72,8 @@ export default function RecipeCarousel() {
       scale: 1,
       opacity: 1,
       zIndex: 10,
-      width: 600,
-      height: 400,
+      width: "min(600px, 85vw)", // Slightly reduced width for better mobile margins
+      height: "min(400px, 60vw)",
       left: "50%",
       transform: "translate(-50%, -50%)",
     },
@@ -82,8 +82,8 @@ export default function RecipeCarousel() {
       scale: 0.6,
       opacity: 0.5,
       zIndex: 0,
-      width: 192, // w-48 = 12rem = 192px
-      height: 192,
+      width: "min(192px, 30vw)", // Responsive width
+      height: "min(192px, 30vw)", // Responsive height
       left: "1rem",
       transform: "translateY(-50%)",
     },
@@ -92,15 +92,15 @@ export default function RecipeCarousel() {
       scale: 0.6,
       opacity: 0.5,
       zIndex: 0,
-      width: 192,
-      height: 192,
-      left: "calc(100% - 13rem)", // Adjust this value to position the right preview
+      width: "min(192px, 30vw)", // Responsive width
+      height: "min(192px, 30vw)", // Responsive height
+      left: "calc(100% - min(208px, 32vw))", // Adjusted for responsive width
       transform: "translateY(-50%)",
     },
   };
 
   return (
-    <div className="relative h-[500px] w-full overflow-hidden">
+    <div className="relative h-[min(500px,70vh)] w-full overflow-hidden px-4">
       <AnimatePresence initial={false} custom={direction}>
         {/* Main Slide */}
         <motion.div
@@ -127,7 +127,7 @@ export default function RecipeCarousel() {
               paginate(-1);
             }
           }}
-          className="absolute top-1/2 rounded-xl overflow-hidden"
+          className="absolute top-1/2 rounded-2xl overflow-hidden shadow-lg" // Increased border radius
         >
           <Link
             href={`/recipe/${currentRecipe.idMeal}`}
@@ -138,10 +138,19 @@ export default function RecipeCarousel() {
               alt={currentRecipe.strMeal}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 768px) 85vw, 600px"
             />
-            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4">
-              <h2 className="text-2xl font-bold">{currentRecipe.strMeal}</h2>
-              <p className="text-sm">{currentRecipe.strCategory}</p>
+            <div
+              className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent 
+                         backdrop-blur-[2px] text-white 
+                         px-4 py-3 sm:px-6 sm:py-4" // Enhanced text container
+            >
+              <h2 className="text-base sm:text-2xl font-bold line-clamp-1 mb-0.5">
+                {currentRecipe.strMeal}
+              </h2>
+              <p className="text-xs sm:text-sm line-clamp-1 text-gray-200">
+                {currentRecipe.strCategory}
+              </p>
             </div>
           </Link>
         </motion.div>
@@ -158,7 +167,7 @@ export default function RecipeCarousel() {
             stiffness: 300,
             damping: 30,
           }}
-          className="absolute top-1/2 rounded-xl overflow-hidden"
+          className="absolute top-1/2 rounded-xl overflow-hidden hidden sm:block"
         >
           <Image
             src={prevRecipe.strMealThumb}
@@ -179,7 +188,7 @@ export default function RecipeCarousel() {
             stiffness: 300,
             damping: 30,
           }}
-          className="absolute top-1/2 rounded-xl overflow-hidden"
+          className="absolute top-1/2 rounded-xl overflow-hidden hidden sm:block"
         >
           <Image
             src={nextRecipe.strMealThumb}
@@ -192,16 +201,20 @@ export default function RecipeCarousel() {
 
       {/* Navigation Buttons */}
       <button
-        className="absolute left-12 top-1/2 -translate-y-1/2 z-20 bg-white/80 p-2 rounded-full hover:bg-white transition-colors"
+        className="absolute left-6 sm:left-12 top-1/2 -translate-y-1/2 z-20 
+                   bg-white/80 p-2 rounded-full hover:bg-white transition-colors
+                   shadow-md hover:shadow-lg"
         onClick={() => paginate(-1)}
       >
-        <ChevronLeft size={24} />
+        <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
       </button>
       <button
-        className="absolute right-12 top-1/2 -translate-y-1/2 z-20 bg-white/80 p-2 rounded-full hover:bg-white transition-colors"
+        className="absolute right-6 sm:right-12 top-1/2 -translate-y-1/2 z-20 
+                   bg-white/80 p-2 rounded-full hover:bg-white transition-colors
+                   shadow-md hover:shadow-lg"
         onClick={() => paginate(1)}
       >
-        <ChevronRight size={24} />
+        <ChevronRight size={20} className="sm:w-6 sm:h-6" />
       </button>
     </div>
   );
