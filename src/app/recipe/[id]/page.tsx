@@ -133,7 +133,7 @@ export default function RecipeDetailPage() {
                     >
                       {ingredientsProgress > 0 && (
                         <motion.div
-                          className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 text-lg"
+                          className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 text-2xl"
                           style={{ filter: "grayscale(0)" }}
                           animate={{ rotate: [0, 360] }}
                           transition={{
@@ -167,7 +167,7 @@ export default function RecipeDetailPage() {
                     >
                       {cookingProgress > 0 && (
                         <motion.div
-                          className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 text-lg"
+                          className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 text-2xl"
                           style={{ filter: "grayscale(0)" }}
                           animate={{ rotate: [0, 360] }}
                           transition={{
