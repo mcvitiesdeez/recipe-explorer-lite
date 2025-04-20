@@ -24,6 +24,7 @@ export default defineConfig([
           argsIgnorePattern: "^_",
         },
       ],
+      "react/react-in-jsx-scope": "off",
     },
     extends: ["js/recommended"],
   },

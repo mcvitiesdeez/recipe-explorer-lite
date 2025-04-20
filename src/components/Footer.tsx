@@ -3,7 +3,7 @@ import {
   FileWarning,
   Home,
   Instagram,
-  Refrigerator,
+  MessageCircleMore,
   Utensils,
   Youtube,
 } from "lucide-react";
@@ -39,29 +39,29 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/recipe"
-                  className="flex flex-row hover:text-[#e63946] hover:scale-110 duration-300"
-                >
-                  <Utensils className="mr-2" />
-                  All Recipes
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/fridge-flip"
-                  className="flex flex-row hover:text-[#e63946] hover:scale-110 duration-300"
-                >
-                  <Refrigerator className="mr-2" />
-                  Fridge Flip
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/about"
                   className="flex flex-row hover:text-[#e63946] hover:scale-110 duration-300"
                 >
                   <FileWarning className="mr-2" />
                   About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/recipe"
+                  className="flex flex-row hover:text-[#e63946] hover:scale-110 duration-300"
+                >
+                  <Utensils className="mr-2" />
+                  Recipes
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/feedback"
+                  className="flex flex-row hover:text-[#e63946] hover:scale-110 duration-300"
+                >
+                  <MessageCircleMore className="mr-2" />
+                  Feedback
                 </Link>
               </li>
             </ul>
