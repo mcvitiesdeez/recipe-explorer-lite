@@ -3,7 +3,6 @@ import {
   CategoryResponse,
   AreaResponse,
   IngredientResponse,
-  FeedbackResponse,
 } from "@/types";
 
 const API_BASE_URL = "https://www.themealdb.com/api/json/v1/1";
@@ -114,43 +113,3 @@ export const getVegetarianMeals = async (): Promise<MealResponse> => {
   const response = await getMealsByCategory("Vegetarian");
   return response;
 };
-
-// Get recipe feedback
-export const getRecipeFeedback = async (
-  mealId: string
-): Promise<FeedbackResponse> => {
-  // In a real app, this would fetch from an actual API endpoint
-  // For demo purposes, we're generating mock data
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
-  // Generate some mock feedback
-  const mockFeedback = Array(Math.floor(Math.random() * 5) + 1)
-    .fill(null)
-    .map((_, index) => ({
-      id: `feedback-${mealId}-${index}`,
-      name: [
-        `John Doe`,
-        `Jane Smith`,
-        `Alex Johnson`,
-        `Taylor Wilson`,
-        `Sam Rodriguez`,
-      ][Math.floor(Math.random() * 5)],
-      rating: Math.floor(Math.random() * 5) + 1,
-      comment: [
-        "This recipe was amazing! Definitely making it again.",
-        "Turned out pretty good. I added some extra spices.",
-        "My family loved this dish!",
-        "Great recipe but took longer to prepare than expected.",
-        "Perfect for a weekend dinner. Not too complicated.",
-      ][Math.floor(Math.random() * 5)],
-      date: new Date(
-        Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000
-      )
-        .toISOString()
-        .split("T")[0],
-    }));
-
-  return { feedback: mockFeedback };
-};
-
-//useMutation to submit feedback

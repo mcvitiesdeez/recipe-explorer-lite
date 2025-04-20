@@ -232,7 +232,7 @@ export default function RecipeDetailPage() {
             Instructions
           </h2>
           <div className="space-y-4">
-            {instructions.map((step, index) => (
+            {instructions.map((step: string, index: number) => (
               <div
                 key={index}
                 className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg group transition-colors"

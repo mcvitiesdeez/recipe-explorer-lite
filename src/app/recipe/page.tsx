@@ -1,7 +1,7 @@
 "use client";
 
+import React, { Suspense } from "react";
 import { useState, useEffect } from "react";
-import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import RecipeCard from "@/components/RecipeCard";
@@ -16,7 +16,8 @@ import { Category, Meal } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function RecipePage() {
+// Create a separate component for the search functionality
+function RecipeContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
   const [selectedCategory, setSelectedCategory] = useState<string>(
@@ -33,7 +34,6 @@ export default function RecipePage() {
     data: categoriesData,
     isLoading: isLoadingCategories,
     isError: isErrorCategories,
-    error: categoriesError,
   } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
@@ -44,7 +44,6 @@ export default function RecipePage() {
     data: mealsData,
     isLoading: isLoadingMeals,
     isError: isErrorMeals,
-    error: mealsError,
     refetch: refetchMeals,
   } = useQuery({
     queryKey: ["meals", selectedCategory, debouncedSearchTerm],
@@ -241,5 +240,14 @@ export default function RecipePage() {
         </div>
       )}
     </motion.div>
+  );
+}
+
+// Main page component
+export default function RecipePage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <RecipeContent />
+    </Suspense>
   );
 }
