@@ -147,11 +147,14 @@ function RecipeContent() {
 
   // Add this function to handle page changes with smooth transition
   const handlePageChange = (newPage: number) => {
+    // Update the current page immediately for visual feedback
+    setCurrentPage(newPage);
+
+    // Then handle the transition animation
     setIsPageTransitioning(true);
     setTimeout(() => {
-      setCurrentPage(newPage);
       setIsPageTransitioning(false);
-    }, 200); // Match this with the animation duration
+    }, 200);
   };
 
   // Pagination Logic
@@ -318,7 +321,11 @@ function RecipeContent() {
           <button
             onClick={() => handlePageChange(1)}
             disabled={currentPage === 1 || isPageTransitioning}
-            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100 transition-colors"
+            className={`p-2 rounded-lg border transition-colors ${
+              currentPage === 1
+                ? "bg-orange-500 text-white"
+                : "hover:bg-gray-100"
+            } disabled:opacity-50`}
             aria-label="First page"
           >
             <ChevronsLeft size={20} className="mr-1" />
@@ -328,7 +335,11 @@ function RecipeContent() {
           <button
             onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1 || isPageTransitioning}
-            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100 transition-colors"
+            className={`p-2 rounded-lg border transition-colors ${
+              currentPage === 1
+                ? "bg-orange-500 text-white"
+                : "hover:bg-gray-100"
+            } disabled:opacity-50`}
             aria-label="Previous page"
           >
             <ChevronLeft size={20} />
@@ -380,7 +391,11 @@ function RecipeContent() {
               handlePageChange(Math.min(totalPages, currentPage + 1))
             }
             disabled={currentPage === totalPages || isPageTransitioning}
-            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100 transition-colors"
+            className={`p-2 rounded-lg border transition-colors ${
+              currentPage === totalPages
+                ? "bg-orange-500 text-white"
+                : "hover:bg-gray-100"
+            } disabled:opacity-50`}
             aria-label="Next page"
           >
             <ChevronRight size={20} />
@@ -390,7 +405,11 @@ function RecipeContent() {
           <button
             onClick={() => handlePageChange(totalPages)}
             disabled={currentPage === totalPages || isPageTransitioning}
-            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100 transition-colors"
+            className={`p-2 rounded-lg border transition-colors ${
+              currentPage === totalPages
+                ? "bg-orange-500 text-white"
+                : "hover:bg-gray-100"
+            } disabled:opacity-50`}
             aria-label="Last page"
           >
             <ChevronsRight size={20} className="mr-1" />
