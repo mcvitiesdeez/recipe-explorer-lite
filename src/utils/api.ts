@@ -113,3 +113,14 @@ export const getVegetarianMeals = async (): Promise<MealResponse> => {
   const response = await getMealsByCategory("Vegetarian");
   return response;
 };
+
+// Get meals by first letter
+export const getMealsByLetter = async (
+  letter: string
+): Promise<MealResponse> => {
+  const response = await fetch(`${API_BASE_URL}/search.php?f=${letter}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch meals starting with ${letter}`);
+  }
+  return response.json();
+};

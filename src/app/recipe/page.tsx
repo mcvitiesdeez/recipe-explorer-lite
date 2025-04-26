@@ -1,7 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import RecipeCard from "@/components/RecipeCard";
@@ -11,23 +10,38 @@ import {
   getCategories,
   getMealsByCategory,
   searchMealsByName,
+  getMealsByLetter,
 } from "@/utils/api";
 import { Category, Meal } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 
 // Create a separate component for the search functionality
 function RecipeContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
+  const letterParam = searchParams.get("letter");
   const [selectedCategory, setSelectedCategory] = useState<string>(
     categoryParam || "All"
+  );
+  const [selectedLetter, setSelectedLetter] = useState<string>(
+    letterParam || "all"
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const recipesPerPage = 12;
+
+  // Alphabet array for filter
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
   // Categories Query
   const {
@@ -46,18 +60,50 @@ function RecipeContent() {
     isError: isErrorMeals,
     refetch: refetchMeals,
   } = useQuery({
-    queryKey: ["meals", selectedCategory, debouncedSearchTerm],
+    queryKey: ["meals", selectedCategory, selectedLetter, debouncedSearchTerm],
     queryFn: async () => {
       if (debouncedSearchTerm) {
         return searchMealsByName(debouncedSearchTerm);
       }
+
+      if (selectedLetter !== "all") {
+        return getMealsByLetter(selectedLetter);
+      }
+
       if (selectedCategory === "All") {
-        // Get random meals or featured meals
-        return getMealsByCategory("Beef"); // Default category
+        // Fetch all meals by iterating through the alphabet
+        const allMeals: Meal[] = [];
+        const letters = alphabet;
+
+        // Fetch letters in batches to avoid overwhelming the API
+        const batchSize = 4;
+        for (let i = 0; i < letters.length; i += batchSize) {
+          const batch = letters.slice(i, i + batchSize);
+          const batchPromises = batch.map((letter) => getMealsByLetter(letter));
+          const batchResults = await Promise.all(batchPromises);
+
+          batchResults.forEach((result) => {
+            if (result.meals) {
+              allMeals.push(...result.meals);
+            }
+          });
+        }
+
+        // Remove duplicates based on idMeal
+        const uniqueMeals = Array.from(
+          new Map(allMeals.map((meal) => [meal.idMeal, meal])).values()
+        );
+
+        // Sort meals alphabetically by name
+        const sortedMeals = uniqueMeals.sort((a, b) =>
+          a.strMeal.localeCompare(b.strMeal)
+        );
+
+        return { meals: sortedMeals };
       }
       return getMealsByCategory(selectedCategory);
     },
-    enabled: !!selectedCategory || !!debouncedSearchTerm,
+    enabled: !!selectedCategory || !!debouncedSearchTerm || !!selectedLetter,
   });
 
   // Search Debouncing
@@ -94,6 +140,18 @@ function RecipeContent() {
       opacity: 1,
       transition: { type: "spring", stiffness: 100 },
     },
+  };
+
+  // Add this state to track the transition
+  const [isPageTransitioning, setIsPageTransitioning] = useState(false);
+
+  // Add this function to handle page changes with smooth transition
+  const handlePageChange = (newPage: number) => {
+    setIsPageTransitioning(true);
+    setTimeout(() => {
+      setCurrentPage(newPage);
+      setIsPageTransitioning(false);
+    }, 200); // Match this with the animation duration
   };
 
   // Pagination Logic
@@ -145,6 +203,41 @@ function RecipeContent() {
         </button>
       </div>
 
+      {/* Alphabet Filter */}
+      <div className="mb-8">
+        <div className="flex flex-wrap gap-2 justify-center">
+          <button
+            onClick={() => {
+              setSelectedLetter("all");
+              setCurrentPage(1);
+            }}
+            className={`px-3 py-1 rounded-md cursor-pointer ${
+              selectedLetter === "all"
+                ? "bg-orange-500 text-white"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
+          >
+            All
+          </button>
+          {alphabet.map((letter) => (
+            <button
+              key={letter}
+              onClick={() => {
+                setSelectedLetter(letter);
+                setCurrentPage(1);
+              }}
+              className={`px-3 py-1 rounded-md cursor-pointer ${
+                selectedLetter === letter
+                  ? "bg-orange-500 text-white"
+                  : "bg-gray-100 hover:bg-gray-200"
+              }`}
+            >
+              {letter}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Categories Filter */}
       <AnimatePresence>
         {isFilterOpen && (
@@ -183,7 +276,7 @@ function RecipeContent() {
         )}
       </AnimatePresence>
 
-      {/* Recipes Grid */}
+      {/* Recipes Grid with AnimatePresence */}
       {isLoadingMeals ? (
         <div className="flex justify-center py-12">
           <LoadingSpinner />
@@ -191,53 +284,118 @@ function RecipeContent() {
       ) : isErrorMeals ? (
         <ErrorDisplay message="Failed to load recipes" retry={refetchMeals} />
       ) : (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
-        >
-          {paginatedMeals.map((meal: Meal) => (
-            <motion.div key={meal.idMeal} variants={itemVariants}>
-              <RecipeCard recipe={meal} />
-            </motion.div>
-          ))}
-        </motion.div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPage} // This forces a re-render with animation when page changes
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
+            style={{ minHeight: "600px" }} // Add minimum height to prevent layout shift
+          >
+            {paginatedMeals.map((meal: Meal) => (
+              <motion.div
+                key={meal.idMeal}
+                variants={itemVariants}
+                layout // This helps maintain smooth transitions
+                className="relative" // Required for proper layout animations
+              >
+                <RecipeCard recipe={meal} />
+              </motion.div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
       )}
 
-      {/* Pagination */}
+      {/* Pagination with smooth transitions */}
       {totalPages > 1 && (
-        <div className="mt-8 flex justify-center gap-2">
+        <motion.div
+          className="mt-8 flex justify-center gap-2"
+          layout // This helps maintain smooth transitions
+        >
+          {/* First Page Button */}
           <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100"
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1 || isPageTransitioning}
+            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100 transition-colors"
+            aria-label="First page"
+          >
+            <ChevronsLeft size={20} className="mr-1" />
+          </button>
+
+          {/* Previous Page Button */}
+          <button
+            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1 || isPageTransitioning}
+            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100 transition-colors"
+            aria-label="Previous page"
           >
             <ChevronLeft size={20} />
           </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`w-10 h-10 rounded-lg ${
-                currentPage === page
-                  ? "bg-orange-500 text-white"
-                  : "border hover:bg-gray-100"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
+          {/* Page Numbers */}
+          <div className="flex gap-2">
+            {(() => {
+              const pages = [];
+              const maxVisible = 5;
+              let start = Math.max(
+                1,
+                Math.min(
+                  currentPage - Math.floor(maxVisible / 2),
+                  totalPages - maxVisible + 1
+                )
+              );
+              const end = Math.min(start + maxVisible - 1, totalPages);
 
+              if (end - start + 1 < maxVisible) {
+                start = Math.max(1, end - maxVisible + 1);
+              }
+
+              for (let i = start; i <= end; i++) {
+                pages.push(
+                  <motion.button
+                    key={i}
+                    onClick={() => handlePageChange(i)}
+                    disabled={isPageTransitioning}
+                    className={`w-10 h-10 rounded-lg transition-colors ${
+                      currentPage === i
+                        ? "bg-orange-500 text-white"
+                        : "border hover:bg-gray-100"
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {i}
+                  </motion.button>
+                );
+              }
+              return pages;
+            })()}
+          </div>
+
+          {/* Next Page Button */}
           <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100"
+            onClick={() =>
+              handlePageChange(Math.min(totalPages, currentPage + 1))
+            }
+            disabled={currentPage === totalPages || isPageTransitioning}
+            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100 transition-colors"
+            aria-label="Next page"
           >
             <ChevronRight size={20} />
           </button>
-        </div>
+
+          {/* Last Page Button */}
+          <button
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages || isPageTransitioning}
+            className="p-2 rounded-lg border disabled:opacity-50 hover:bg-gray-100 transition-colors"
+            aria-label="Last page"
+          >
+            <ChevronsRight size={20} className="mr-1" />
+          </button>
+        </motion.div>
       )}
     </motion.div>
   );
