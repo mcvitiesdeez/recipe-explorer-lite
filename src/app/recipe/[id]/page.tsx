@@ -36,27 +36,12 @@ export default function RecipeDetailPage() {
   const [showIngredientsConfetti, setShowIngredientsConfetti] = useState(false);
   const [showCookingConfetti, setShowCookingConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({
-    width: typeof window !== "undefined" ? window.innerWidth : 0,
-    height: typeof window !== "undefined" ? window.innerHeight : 0,
+    width: 0,
+    height: 0,
   });
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Invert the visibility since we want to show floating bar when original is not visible
-        setIsProgressBarVisible(entry.isIntersecting);
-      },
-      {
-        threshold: 0,
-      }
-    );
-
-    if (progressBarRef.current) {
-      observer.observe(progressBarRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
+  const [isIngredientsConfettiActive, setIsIngredientsConfettiActive] =
+    useState(false);
+  const [isCookingConfettiActive, setIsCookingConfettiActive] = useState(false);
 
   const {
     data: recipe,
@@ -68,39 +53,110 @@ export default function RecipeDetailPage() {
     queryFn: () => getMealById(id as string),
   });
 
-  if (isLoading) return <LoadingSpinner />;
-  if (isError) return <ErrorDisplay message={(error as Error).message} />;
+  // Initialize window size
+  useEffect(() => {
+    function handleResize() {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
 
-  const ingredients = getIngredientsWithMeasures(recipe);
-  const instructions = recipe.strInstructions
-    .split(/\r\n|\n|\r/)
-    .filter((step: string) => step.trim() !== "");
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Progress bar observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsProgressBarVisible(entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+
+    if (progressBarRef.current) {
+      observer.observe(progressBarRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Calculate progress percentages
+  const ingredientsProgress = recipe
+    ? (checkedIngredients.size / getIngredientsWithMeasures(recipe).length) *
+      100
+    : 0;
+
+  const cookingProgress = recipe
+    ? (checkedInstructions.size /
+        recipe.strInstructions
+          .split(/\r\n|\n|\r/)
+          .filter((step: string) => step.trim() !== "").length) *
+      100
+    : 0;
+
+  // Watch for progress completion
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (ingredientsProgress === 100 && !showIngredientsConfetti) {
+      setShowIngredientsConfetti(true);
+      setIsIngredientsConfettiActive(true);
+
+      timer = setTimeout(() => {
+        setShowIngredientsConfetti(false);
+        setIsIngredientsConfettiActive(false);
+      }, 10000);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [ingredientsProgress]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (cookingProgress === 100 && !showCookingConfetti) {
+      setShowCookingConfetti(true);
+      setIsCookingConfettiActive(true);
+
+      timer = setTimeout(() => {
+        setShowCookingConfetti(false);
+        setIsCookingConfettiActive(false);
+      }, 10000);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [cookingProgress]);
 
   const toggleIngredient = (index: number) => {
-    const newChecked = new Set(checkedIngredients);
-    if (newChecked.has(index)) {
-      newChecked.delete(index);
-    } else {
-      newChecked.add(index);
-    }
-    setCheckedIngredients(newChecked);
+    setCheckedIngredients((prev) => {
+      const newChecked = new Set(prev);
+      if (newChecked.has(index)) {
+        newChecked.delete(index);
+      } else {
+        newChecked.add(index);
+      }
+      return newChecked;
+    });
   };
 
   const toggleInstruction = (index: number) => {
-    const newChecked = new Set(checkedInstructions);
-    if (newChecked.has(index)) {
-      newChecked.delete(index);
-    } else {
-      newChecked.add(index);
-    }
-    setCheckedInstructions(newChecked);
+    setCheckedInstructions((prev) => {
+      const newChecked = new Set(prev);
+      if (newChecked.has(index)) {
+        newChecked.delete(index);
+      } else {
+        newChecked.add(index);
+      }
+      return newChecked;
+    });
   };
-
-  // Calculate progress percentages
-  const ingredientsProgress =
-    (checkedIngredients.size / ingredients.length) * 100;
-  const cookingProgress =
-    (checkedInstructions.size / instructions.length) * 100;
 
   // Progress bar animation variants
   const progressVariants = {
@@ -110,38 +166,18 @@ export default function RecipeDetailPage() {
     }),
   };
 
-  // Add window resize handler
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) return <ErrorDisplay message={(error as Error).message} />;
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Watch for progress completion
-  useEffect(() => {
-    if (ingredientsProgress === 100 && !showIngredientsConfetti) {
-      setShowIngredientsConfetti(true);
-      setTimeout(() => setShowIngredientsConfetti(false), 10000);
-    }
-  }, [ingredientsProgress]);
-
-  useEffect(() => {
-    if (cookingProgress === 100 && !showCookingConfetti) {
-      setShowCookingConfetti(true);
-      setTimeout(() => setShowCookingConfetti(false), 10000);
-    }
-  }, [cookingProgress]);
+  const ingredients = getIngredientsWithMeasures(recipe);
+  const instructions = recipe.strInstructions
+    .split(/\r\n|\n|\r/)
+    .filter((step: string) => step.trim() !== "");
 
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Confetti overlays */}
-      {showIngredientsConfetti && (
+      {showIngredientsConfetti && isIngredientsConfettiActive && (
         <ReactConfetti
           width={windowSize.width}
           height={windowSize.height}
@@ -154,11 +190,14 @@ export default function RecipeDetailPage() {
             "#ffffff", // White for contrast
           ]}
           numberOfPieces={200}
-          recycle={false}
+          recycle={false} // Set to false to prevent infinite loop
+          onConfettiComplete={() => {
+            setIsIngredientsConfettiActive(false);
+          }}
           style={{ position: "fixed", top: 0, left: 0, zIndex: 100 }}
         />
       )}
-      {showCookingConfetti && (
+      {showCookingConfetti && isCookingConfettiActive && (
         <ReactConfetti
           width={windowSize.width}
           height={windowSize.height}
@@ -171,7 +210,10 @@ export default function RecipeDetailPage() {
             "#ffffff", // White for contrast
           ]}
           numberOfPieces={200}
-          recycle={false}
+          recycle={false} // Set to false to prevent infinite loop
+          onConfettiComplete={() => {
+            setIsCookingConfettiActive(false);
+          }}
           style={{ position: "fixed", top: 0, left: 0, zIndex: 100 }}
         />
       )}
@@ -197,8 +239,8 @@ export default function RecipeDetailPage() {
                       <motion.div
                         className="bg-blue-500 h-full rounded-full relative"
                         initial={{ width: "0%" }}
-                        animate={progressVariants.initial(ingredientsProgress)}
-                        custom={ingredientsProgress}
+                        animate={{ width: `${ingredientsProgress}%` }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
                       >
                         {ingredientsProgress > 0 && (
                           <motion.div
@@ -232,8 +274,8 @@ export default function RecipeDetailPage() {
                       <motion.div
                         className="bg-green-500 h-full rounded-full relative"
                         initial={{ width: "0%" }}
-                        animate={progressVariants.initial(cookingProgress)}
-                        custom={cookingProgress}
+                        animate={{ width: `${cookingProgress}%` }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
                       >
                         {cookingProgress > 0 && (
                           <motion.div
