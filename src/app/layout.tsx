@@ -4,7 +4,7 @@ import React from "react";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Providers from "@/components/Providers";
+import ClientProvider from "@/providers/client-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,11 +31,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <Providers>
+        <ClientProvider>
           <Navbar />
           <main className="flex-1 m-4">{children}</main>
           <Footer />
-        </Providers>
+        </ClientProvider>
       </body>
     </html>
   );
