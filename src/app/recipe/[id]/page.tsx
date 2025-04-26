@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import ReactConfetti from "react-confetti";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import Image from "next/image";
@@ -9,7 +10,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import FeedbackForm from "@/components/FeedbackForm";
 import { Check } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 async function getMealById(id: string) {
   const response = await fetch(
@@ -30,6 +31,32 @@ export default function RecipeDetailPage() {
   const [checkedInstructions, setCheckedInstructions] = useState<Set<number>>(
     new Set()
   );
+  const [isProgressBarVisible, setIsProgressBarVisible] = useState(true);
+  const progressBarRef = useRef(null);
+  const [showIngredientsConfetti, setShowIngredientsConfetti] = useState(false);
+  const [showCookingConfetti, setShowCookingConfetti] = useState(false);
+  const [windowSize, setWindowSize] = useState({
+    width: typeof window !== "undefined" ? window.innerWidth : 0,
+    height: typeof window !== "undefined" ? window.innerHeight : 0,
+  });
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Invert the visibility since we want to show floating bar when original is not visible
+        setIsProgressBarVisible(entry.isIntersecting);
+      },
+      {
+        threshold: 0,
+      }
+    );
+
+    if (progressBarRef.current) {
+      observer.observe(progressBarRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const {
     data: recipe,
@@ -83,8 +110,158 @@ export default function RecipeDetailPage() {
     }),
   };
 
+  // Add window resize handler
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Watch for progress completion
+  useEffect(() => {
+    if (ingredientsProgress === 100 && !showIngredientsConfetti) {
+      setShowIngredientsConfetti(true);
+      setTimeout(() => setShowIngredientsConfetti(false), 10000);
+    }
+  }, [ingredientsProgress]);
+
+  useEffect(() => {
+    if (cookingProgress === 100 && !showCookingConfetti) {
+      setShowCookingConfetti(true);
+      setTimeout(() => setShowCookingConfetti(false), 10000);
+    }
+  }, [cookingProgress]);
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Confetti overlays */}
+      {showIngredientsConfetti && (
+        <ReactConfetti
+          width={windowSize.width}
+          height={windowSize.height}
+          colors={[
+            "#2563EB", // Bright blue
+            "#EC4899", // Pink
+            "#F59E0B", // Amber
+            "#10B981", // Emerald
+            "#6366F1", // Indigo
+            "#ffffff", // White for contrast
+          ]}
+          numberOfPieces={200}
+          recycle={false}
+          style={{ position: "fixed", top: 0, left: 0, zIndex: 100 }}
+        />
+      )}
+      {showCookingConfetti && (
+        <ReactConfetti
+          width={windowSize.width}
+          height={windowSize.height}
+          colors={[
+            "#DC2626", // Red
+            "#16A34A", // Green
+            "#7C3AED", // Purple
+            "#FBBF24", // Yellow
+            "#DB2777", // Pink
+            "#ffffff", // White for contrast
+          ]}
+          numberOfPieces={200}
+          recycle={false}
+          style={{ position: "fixed", top: 0, left: 0, zIndex: 100 }}
+        />
+      )}
+
+      {/* Floating Progress Bar */}
+      <AnimatePresence>
+        {!isProgressBarVisible && (
+          <motion.div
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            className="fixed top-0 left-0 right-0 z-50 bg-white shadow-lg"
+          >
+            <div className="container mx-auto px-4 py-4">
+              <div className="grid grid-cols-2 gap-6">
+                {/* Floating Ingredients Progress */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-base font-semibold whitespace-nowrap">
+                    Ingredients Progress
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 bg-gray-200 rounded-full h-5 relative">
+                      <motion.div
+                        className="bg-blue-500 h-full rounded-full relative"
+                        initial={{ width: "0%" }}
+                        animate={progressVariants.initial(ingredientsProgress)}
+                        custom={ingredientsProgress}
+                      >
+                        {ingredientsProgress > 0 && (
+                          <motion.div
+                            className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 text-2xl"
+                            animate={{ rotate: [0, 360] }}
+                            transition={{
+                              duration: 0.5,
+                              ease: "easeOut",
+                              times: [0, 1],
+                            }}
+                            key={ingredientsProgress}
+                          >
+                            🍗
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 min-w-[4rem] text-right">
+                      {checkedIngredients.size}/{ingredients.length}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Floating Cooking Progress */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-base font-semibold whitespace-nowrap">
+                    Cooking Progress
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 bg-gray-200 rounded-full h-5 relative">
+                      <motion.div
+                        className="bg-green-500 h-full rounded-full relative"
+                        initial={{ width: "0%" }}
+                        animate={progressVariants.initial(cookingProgress)}
+                        custom={cookingProgress}
+                      >
+                        {cookingProgress > 0 && (
+                          <motion.div
+                            className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 text-2xl"
+                            animate={{ rotate: [0, 360] }}
+                            transition={{
+                              duration: 0.5,
+                              ease: "easeOut",
+                              times: [0, 1],
+                            }}
+                            key={cookingProgress}
+                          >
+                            🍜
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 min-w-[4rem] text-right">
+                      {checkedInstructions.size}/{instructions.length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header Section */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
@@ -117,7 +294,7 @@ export default function RecipeDetailPage() {
             </div>
 
             {/* Progress Indicators - Made Sticky */}
-            <div className="space-y-4 sticky top-4 z-10">
+            <div ref={progressBarRef} className="space-y-4 sticky top-4 z-10">
               {/* Ingredients Progress */}
               <div className="bg-gray-100 rounded-lg p-4 shadow-sm backdrop-blur-sm bg-opacity-95">
                 <h3 className="text-lg font-semibold mb-2">
